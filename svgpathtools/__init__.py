@@ -17,6 +17,6 @@ from .document import (Document, CONVERSIONS, CONVERT_ONLY_PATHS,
 from .svg_io_sax import SaxDocument
 
 try:
-    from .svg_to_paths import svg2paths, svg2paths2
+    from .svg_to_paths import svg2paths, svg2paths_modified, svg2paths2
 except ImportError:
     pass
