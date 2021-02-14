@@ -101,107 +101,6 @@ def line2pathd(l):
         + 'L' + l.attrib.get('x2', '0') + ' ' + l.attrib.get('y2', '0')
     )
 
-
-def svg2paths(svg_file_location,
-              return_svg_attributes=False,
-              convert_circles_to_paths=True,
-              convert_ellipses_to_paths=True,
-              convert_lines_to_paths=True,
-              convert_polylines_to_paths=True,
-              convert_polygons_to_paths=True,
-              convert_rectangles_to_paths=True):
-    """Converts an SVG into a list of Path objects and attribute dictionaries. 
-
-    Converts an SVG file into a list of Path objects and a list of
-    dictionaries containing their attributes.  This currently supports
-    SVG Path, Line, Polyline, Polygon, Circle, and Ellipse elements.
-
-    Args:
-        svg_file_location (string): the location of the svg file
-        return_svg_attributes (bool): Set to True and a dictionary of
-            svg-attributes will be extracted and returned.  See also the 
-            `svg2paths2()` function.
-        convert_circles_to_paths: Set to False to exclude SVG-Circle
-            elements (converted to Paths).  By default circles are included as 
-            paths of two `Arc` objects.
-        convert_ellipses_to_paths (bool): Set to False to exclude SVG-Ellipse
-            elements (converted to Paths).  By default ellipses are included as 
-            paths of two `Arc` objects.
-        convert_lines_to_paths (bool): Set to False to exclude SVG-Line elements
-            (converted to Paths)
-        convert_polylines_to_paths (bool): Set to False to exclude SVG-Polyline
-            elements (converted to Paths)
-        convert_polygons_to_paths (bool): Set to False to exclude SVG-Polygon
-            elements (converted to Paths)
-        convert_rectangles_to_paths (bool): Set to False to exclude SVG-Rect
-            elements (converted to Paths).
-
-    Returns: 
-        list: The list of Path objects.
-        list: The list of corresponding path attribute dictionaries.
-        dict (optional): A dictionary of svg-attributes (see `svg2paths2()`).
-    """
-    if os_path.dirname(svg_file_location) == '':
-        svg_file_location = os_path.join(getcwd(), svg_file_location)
-
-    doc = parse(svg_file_location)
-
-    def dom2dict(element):
-        """Converts DOM elements to dictionaries of attributes."""
-        keys = list(element.attributes.keys())
-        values = [val.value for val in list(element.attributes.values())]
-        return dict(list(zip(keys, values)))
-
-    # Use minidom to extract path strings from input SVG
-    paths = [dom2dict(el) for el in doc.getElementsByTagName('path')]
-    d_strings = [el['d'] for el in paths]
-    attribute_dictionary_list = paths
-
-    # Use minidom to extract polyline strings from input SVG, convert to
-    # path strings, add to list
-    if convert_polylines_to_paths:
-        plins = [dom2dict(el) for el in doc.getElementsByTagName('polyline')]
-        d_strings += [polyline2pathd(pl) for pl in plins]
-        attribute_dictionary_list += plins
-
-    # Use minidom to extract polygon strings from input SVG, convert to
-    # path strings, add to list
-    if convert_polygons_to_paths:
-        pgons = [dom2dict(el) for el in doc.getElementsByTagName('polygon')]
-        d_strings += [polygon2pathd(pg) for pg in pgons]
-        attribute_dictionary_list += pgons
-
-    if convert_lines_to_paths:
-        lines = [dom2dict(el) for el in doc.getElementsByTagName('line')]
-        d_strings += [('M' + l['x1'] + ' ' + l['y1'] +
-                       'L' + l['x2'] + ' ' + l['y2']) for l in lines]
-        attribute_dictionary_list += lines
-
-    if convert_ellipses_to_paths:
-        ellipses = [dom2dict(el) for el in doc.getElementsByTagName('ellipse')]
-        d_strings += [ellipse2pathd(e) for e in ellipses]
-        attribute_dictionary_list += ellipses
-
-    if convert_circles_to_paths:
-        circles = [dom2dict(el) for el in doc.getElementsByTagName('circle')]
-        d_strings += [ellipse2pathd(c) for c in circles]
-        attribute_dictionary_list += circles
-
-    if convert_rectangles_to_paths:
-        rectangles = [dom2dict(el) for el in doc.getElementsByTagName('rect')]
-        d_strings += [rect2pathd(r) for r in rectangles]
-        attribute_dictionary_list += rectangles
-
-    if return_svg_attributes:
-        svg_attributes = dom2dict(doc.getElementsByTagName('svg')[0])
-        doc.unlink()
-        path_list = [parse_path(d) for d in d_strings]
-        return path_list, attribute_dictionary_list, svg_attributes
-    else:
-        doc.unlink()
-        path_list = [parse_path(d) for d in d_strings]
-        return path_list, attribute_dictionary_list
-
 def svg2paths_modified(svg_file,
               return_svg_attributes=False,
               convert_circles_to_paths=True,
@@ -217,7 +116,7 @@ def svg2paths_modified(svg_file,
     SVG Path, Line, Polyline, Polygon, Circle, and Ellipse elements.
 
     Args:
-        svg_file_location (string): the location of the svg file
+        svg_file (string): file-like object
         return_svg_attributes (bool): Set to True and a dictionary of
             svg-attributes will be extracted and returned.  See also the 
             `svg2paths2()` function.
@@ -301,6 +200,64 @@ def svg2paths_modified(svg_file,
         doc.unlink()
         path_list = [parse_path(d) for d in d_strings]
         return path_list, attribute_dictionary_list
+
+def svg2paths(svg_file_location,
+              return_svg_attributes=False,
+              convert_circles_to_paths=True,
+              convert_ellipses_to_paths=True,
+              convert_lines_to_paths=True,
+              convert_polylines_to_paths=True,
+              convert_polygons_to_paths=True,
+              convert_rectangles_to_paths=True):
+    """Converts an SVG into a list of Path objects and attribute dictionaries. 
+
+    Converts an SVG file into a list of Path objects and a list of
+    dictionaries containing their attributes.  This currently supports
+    SVG Path, Line, Polyline, Polygon, Circle, and Ellipse elements.
+
+    Args:
+        svg_file_location (string): the location of the svg file
+        return_svg_attributes (bool): Set to True and a dictionary of
+            svg-attributes will be extracted and returned.  See also the 
+            `svg2paths2()` function.
+        convert_circles_to_paths: Set to False to exclude SVG-Circle
+            elements (converted to Paths).  By default circles are included as 
+            paths of two `Arc` objects.
+        convert_ellipses_to_paths (bool): Set to False to exclude SVG-Ellipse
+            elements (converted to Paths).  By default ellipses are included as 
+            paths of two `Arc` objects.
+        convert_lines_to_paths (bool): Set to False to exclude SVG-Line elements
+            (converted to Paths)
+        convert_polylines_to_paths (bool): Set to False to exclude SVG-Polyline
+            elements (converted to Paths)
+        convert_polygons_to_paths (bool): Set to False to exclude SVG-Polygon
+            elements (converted to Paths)
+        convert_rectangles_to_paths (bool): Set to False to exclude SVG-Rect
+            elements (converted to Paths).
+
+    Returns: 
+        list: The list of Path objects.
+        list: The list of corresponding path attribute dictionaries.
+        dict (optional): A dictionary of svg-attributes (see `svg2paths2()`).
+    """
+    if os_path.dirname(svg_file_location) == '':
+        svg_file_location = os_path.join(getcwd(), svg_file_location)
+
+    f = open(svg_file_location)
+
+    return svg2paths_modified(f,
+                            return_svg_attributes=return_svg_attributes,
+                            convert_circles_to_paths=convert_circles_to_paths,
+                            convert_ellipses_to_paths=convert_ellipses_to_paths,
+                            convert_lines_to_paths=convert_lines_to_paths,
+                            convert_polylines_to_paths=convert_polylines_to_paths,
+                            convert_polygons_to_paths=convert_polygons_to_paths,
+                            convert_rectangles_to_paths=convert_rectangles_to_paths)
+
+
+    
+
+
 
 
 def svg2paths2(svg_file_location,
