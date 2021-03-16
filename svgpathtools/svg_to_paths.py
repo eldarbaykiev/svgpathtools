@@ -17,6 +17,12 @@ COORD_PAIR_TMPLT = re.compile(
     r'([\+-]?\d*[\.\d]\d*[eE][\+-]?\d+|[\+-]?\d*[\.\d]\d*)'
 )
 
+def dom2dict(element):
+    """Converts DOM elements to dictionaries of attributes."""
+    keys = list(element.attributes.keys())
+    values = [val.value for val in list(element.attributes.values())]
+    return dict(list(zip(keys, values)))
+
 def path2pathd(path):
     return path.get('d', '')
 
@@ -145,12 +151,6 @@ def svg2paths_modified(svg_file,
 
     doc = parse(svg_file)
 
-    def dom2dict(element):
-        """Converts DOM elements to dictionaries of attributes."""
-        keys = list(element.attributes.keys())
-        values = [val.value for val in list(element.attributes.values())]
-        return dict(list(zip(keys, values)))
-
     # Use minidom to extract path strings from input SVG
     paths = [dom2dict(el) for el in doc.getElementsByTagName('path')]
     d_strings = [el['d'] for el in paths]
@@ -253,11 +253,6 @@ def svg2paths(svg_file_location,
                             convert_polylines_to_paths=convert_polylines_to_paths,
                             convert_polygons_to_paths=convert_polygons_to_paths,
                             convert_rectangles_to_paths=convert_rectangles_to_paths)
-
-
-    
-
-
 
 
 def svg2paths2(svg_file_location,
